@@ -1,0 +1,67 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "S3Bucket v1",
+  "Parameters": {
+    "environmentType": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "S3BucketSample": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "Private",
+        "BucketName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "environmentType"
+              },
+              "-sample-bucket"
+            ]
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "environmentType",
+            "Value": {
+              "Ref": "environmentType"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "S3BucketSampleName": {
+      "Description": "Name of Hosting S3 bucket",
+      "Value": {
+        "Ref": "S3BucketSample"
+      }
+    },
+    "S3BucketSampleArn": {
+      "Description": "ARN of Hosting S3 bucket",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "arn:aws:s3:::",
+            {
+              "Ref": "S3BucketSample"
+            }
+          ]
+        ]
+      }
+    },
+    "S3BucketSampleDomainName": {
+      "Description": "DomainName of S3 bucket",
+      "Value": {
+        "Fn::GetAtt": [
+          "S3BucketSample",
+          "DomainName"
+        ]
+      }
+    }
+  }
+}

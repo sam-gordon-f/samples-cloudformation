@@ -1,0 +1,56 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Route53 v1",
+  "Parameters": {
+    "environmentType": {
+      "Type": "String"
+    },
+    "cloudfrontDistributionDomainName": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "route53HostedZoneSample": {
+      "Type": "AWS::Route53::HostedZone",
+      "Properties": {
+        "Name": "testdomain",
+        "HostedZoneConfig": {
+          "Comment": "testing hosted zone"
+        },
+        "HostedZoneTags": [
+          {
+            "Key": "environmentType",
+            "Value": {
+              "Ref": "environmentType"
+            }
+          }
+        ]
+      }
+    },
+    "route53RecordSetSample": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "Comment": "testing record set",
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "environmentType"
+              },
+              ".testdomain."
+            ]
+          ]
+        },
+        "Type": "A",
+        "HostedZoneName": ".testdomain",
+        "AliasTarget": {
+          "DNSName": {
+            "Ref": "cloudfrontDistributionDomainName"
+          },
+          "HostedZoneId": "Z2FDTNDATAQYW2"
+        }
+      }
+    }
+  }
+}
