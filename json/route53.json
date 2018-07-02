@@ -17,14 +17,12 @@
         "HostedZoneConfig": {
           "Comment": "testing hosted zone"
         },
-        "HostedZoneTags": [
-          {
-            "Key": "environmentType",
-            "Value": {
-              "Ref": "environmentType"
-            }
+        "HostedZoneTags": [{
+          "Key": "environmentType",
+          "Value": {
+            "Ref": "environmentType"
           }
-        ]
+        }]
       }
     },
     "route53RecordSetSample": {
@@ -32,15 +30,9 @@
       "Properties": {
         "Comment": "testing record set",
         "Name": {
-          "Fn::Join": [
-            "",
-            [
-              {
-                "Ref": "environmentType"
-              },
-              ".testdomain."
-            ]
-          ]
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, ".testdomain."]]
         },
         "Type": "A",
         "HostedZoneName": ".testdomain",

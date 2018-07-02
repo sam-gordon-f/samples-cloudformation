@@ -12,24 +12,16 @@
       "Properties": {
         "AccessControl": "Private",
         "BucketName": {
-          "Fn::Join": [
-            "",
-            [
-              {
-                "Ref": "environmentType"
-              },
-              "-sample-bucket"
-            ]
-          ]
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-sample-bucket"]]
         },
-        "Tags": [
-          {
-            "Key": "environmentType",
-            "Value": {
-              "Ref": "environmentType"
-            }
+        "Tags": [{
+          "Key": "environmentType",
+          "Value": {
+            "Ref": "environmentType"
           }
-        ]
+        }]
       }
     }
   },
@@ -43,24 +35,15 @@
     "S3BucketSampleArn": {
       "Description": "ARN of Hosting S3 bucket",
       "Value": {
-        "Fn::Join": [
-          "",
-          [
-            "arn:aws:s3:::",
-            {
-              "Ref": "S3BucketSample"
-            }
-          ]
-        ]
+        "Fn::Join": ["", ["arn:aws:s3:::", {
+          "Ref": "S3BucketSample"
+        }]]
       }
     },
     "S3BucketSampleDomainName": {
       "Description": "DomainName of S3 bucket",
       "Value": {
-        "Fn::GetAtt": [
-          "S3BucketSample",
-          "DomainName"
-        ]
+        "Fn::GetAtt": ["S3BucketSample", "DomainName"]
       }
     }
   }
