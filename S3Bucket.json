@@ -1,0 +1,60 @@
+{
+  "Description": "Sample S3Bucket Template",
+  "Parameters": {
+    "environmentType": {
+      "Description": "environment type that the stack relates to (dev | prod | etc...)",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "s3bucketTest": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "Valid values: AuthenticatedRead | AwsExecRead | BucketOwnerRead | BucketOwnerFullControl | LogDeliveryWrite | Private | PublicRead | PublicReadWrite",
+        "BucketName": "(leave blank for replacements to be allowed)",
+        "LoggingConfiguration": {
+          "DestinationBucketName": "bucket-name-logs",
+          "LogFilePrefix": "/bucket-name-logs"
+        },
+        "MetricsConfigurations": [
+          {
+            "Id": "123456789",
+            "Prefix": "bucket-name-logs",
+            "TagFilters": [
+              {
+                "Key": "mertic-key",
+                "Value": "mertic-value"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "bucket-tag-key",
+            "Value": "bucket-tag-value"
+          }
+        ],
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "WebsiteConfiguration": {
+          "ErrorDocument": "error.html",
+          "IndexDocument": "index.html",
+          "RoutingRules": [
+            {
+              "RedirectRule": {
+                "HostName": "hostname",
+                "HttpRedirectCode": "403",
+                "Protocol": "https",
+                "ReplaceKeyWith": "forbidden.html"
+              },
+              "RoutingRuleCondition": {
+                "HttpErrorCodeReturnedEquals": "403"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
