@@ -16,11 +16,11 @@ CloudFormation do
   }]
 
   lambda_details = {
-    'lambdaFunctionSample' => {
+    'Sample' => {
       'runTime' => 'nodejs6.10',
       'handler' => 'handler',
-      'handlerFile' => 'lambdaFunctionSample',
-      'codeDirectory' => 'lambdaFunctionSample',
+      'handlerFile' => 'Sample',
+      'codeDirectory' => 'Sample',
       'memory' => 256,
       'envParams' => {
         'sampleEnvParam' => 'sampleEnvValue'
@@ -38,7 +38,7 @@ CloudFormation do
       Resource("LambdaPermission#{k}#{i}") do
         Type('AWS::Lambda::Permission')
 
-        Property('FunctionName', FnGetAtt(k, 'Arn'))
+        Property('FunctionName', FnGetAtt("LambdaFunction#{k}", 'Arn'))
         Property('Action', 'lambda:InvokeFunction')
         Property('Principal', v2)
         Property('SourceAccount', Ref('AWS::AccountId'))
@@ -49,7 +49,20 @@ CloudFormation do
 
     Resource("IAMRole#{k}") do
       Type('AWS::IAM::Role')
+    end
 
+    Resource("IAMPolicy#{k}") do
+      Type('AWS::IAM::Policy')
+
+      Property('PolicyName',
+               FnJoin('',
+                      [
+                        Ref('environmentType'),
+                        '-sample-policy'
+                      ]))
+      Property('Roles', [
+                 Ref("IAMRole#{k}")
+               ])
     end
 
     Resource("LambdaFunction#{k}") do

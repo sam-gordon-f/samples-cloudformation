@@ -10,11 +10,14 @@
     }
   },
   "Resources": {
-    "LambdaPermissionlambdaFunctionSample1": {
+    "LambdaPermissionSample1": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["lambdaFunctionSample", "Arn"]
+          "Fn::GetAtt": [
+            "LambdaFunctionSample",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "lambda.amazonaws.com",
@@ -23,11 +26,14 @@
         }
       }
     },
-    "LambdaPermissionlambdaFunctionSample2": {
+    "LambdaPermissionSample2": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["lambdaFunctionSample", "Arn"]
+          "Fn::GetAtt": [
+            "LambdaFunctionSample",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "logs.amazonaws.com",
@@ -36,20 +42,47 @@
         }
       }
     },
-    "IAMRolelambdaFunctionSample": {
+    "IAMRoleSample": {
       "Type": "AWS::IAM::Role"
     },
-    "LambdaFunctionlambdaFunctionSample": {
+    "IAMPolicySample": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "environmentType"
+              },
+              "-sample-policy"
+            ]
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "IAMRoleSample"
+          }
+        ]
+      }
+    },
+    "LambdaFunctionSample": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "FunctionName": {
-          "Fn::Join": ["", [{
-            "Ref": "environmentType"
-          }, "-lambdaFunctionSample"]]
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "environmentType"
+              },
+              "-Sample"
+            ]
+          ]
         },
-        "Handler": "lambdaFunctionSample.handler",
+        "Handler": "Sample.handler",
         "Role": {
-          "Ref": "IAMRolelambdaFunctionSample"
+          "Ref": "IAMRoleSample"
         },
         "MemorySize": 256,
         "TracingConfig": {
@@ -59,16 +92,18 @@
           "S3Bucket": {
             "Ref": "s3BucketNameCodeLocation"
           },
-          "S3Key": "codeFolder/lambdaFunctionSample.zip"
+          "S3Key": "codeFolder/Sample.zip"
         },
         "Runtime": "nodejs6.10",
         "Timeout": 25,
-        "Tags": [{
-          "Key": "environmentType",
-          "Value": {
-            "Ref": "environmentType"
+        "Tags": [
+          {
+            "Key": "environmentType",
+            "Value": {
+              "Ref": "environmentType"
+            }
           }
-        }]
+        ]
       }
     }
   }
