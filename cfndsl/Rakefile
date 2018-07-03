@@ -1,0 +1,45 @@
+require 'cfndsl'
+
+namespace :convert do
+  desc('convert ruby templates to json')
+  task :template do
+    begin
+      puts 'converting templates'
+
+      # iterate and parse all ruby templates
+      files = []
+      Dir['*.rb'].each do |template|
+        puts "converting #{template}"
+        files << template.to_s
+      end
+
+      # iterate and parse all config files
+      extras = []
+      Dir['config/*.yml'].each do |extraConfigFile|
+        extras << [:yaml, extraConfigFile]
+      end
+
+      # create json output from ruby templates and configs
+      files.each do |f|
+        # combine file with extras (config + variables)
+        cfJson = CfnDsl.eval_file_with_extras(
+          f,
+          extras
+        ).to_json
+
+        # write json output to folder
+        # File.write(((f.to_s.sub! 'templates/', 'output/').sub! '.rb', '.json'), cfJson)
+
+        new_file_name = f.dup
+        new_file_name.sub! '.rb', '.json'
+        File.write("../output/#{new_file_name}", cfJson)
+
+
+      end
+
+      puts 'templates converted'
+    rescue Exception => e
+      puts "error: #{e}"
+    end
+  end
+end
