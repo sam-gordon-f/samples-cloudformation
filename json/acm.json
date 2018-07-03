@@ -1,0 +1,43 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "acm v1",
+  "Parameters": {
+    "environmentType": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "certificateManagerCertificateSample": {
+      "Type": "AWS::CertificateManager::Certificate",
+      "Properties": {
+        "DomainName": {
+          "Fn::Join": ["", ["*.", {
+            "Ref": "environmentType"
+          }, ".sampledomain"]]
+        },
+        "DomainValidationOptions": [{
+          "DomainName": {
+            "Fn::Join": ["", ["*.", {
+              "Ref": "environmentType"
+            }, ".sampledomain"]]
+          },
+          "ValidationDomain": "sampledomain"
+        }],
+        "Tags": [{
+          "Key": "environmentType",
+          "Value": {
+            "Ref": "environmentType"
+          }
+        }]
+      }
+    }
+  },
+  "Outputs": {
+    "CertificateManagerCertificateSample": {
+      "Description": "wildcard certificate for *.envType.sampledomain",
+      "Value": {
+        "Ref": "certificateManagerCertificateSample"
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "elasticSearch v1",
+  "Parameters": {
+    "environmentType": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "cloudWatchDashboardSample": {
+      "Type": "AWS::CloudWatch::Dashboard",
+      "Properties": {
+        "DashboardName": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-api_gateway_name"]]
+        },
+        "DashboardBody": {
+          "Fn::Sub": ["{\"widgets\" : [{\"type\" : \"metric\",\"x\" : 0,\"y\" : 0,\"width\" : 6,\"height\" : 6,\"properties\" : {\"view\" : \"timeSeries\",\"stacked\" : false,\"metrics\" : [[ \"AWS/ApiGateway\", \"Count\", \"ApiName\", \"api_gateway_name\", { \"stat\" : \"Sum\" } ],[ \".\", \"4XXError\", \".\", \".\", { \"stat\" : \"Sum\" } ],[ \".\", \"5XXError\", \".\", \".\", { \"stat\" : \"Sum\" } ]],\"region\" : \"${stackRegion}\",\"title\" : \"${environmentType}-api_gateway_name}}]}", {
+            "environmentType": {
+              "Ref": "environmentType"
+            },
+            "stackRegion": {
+              "Ref": "AWS::Region"
+            }
+          }]
+        }
+      }
+    }
+  }
+}
