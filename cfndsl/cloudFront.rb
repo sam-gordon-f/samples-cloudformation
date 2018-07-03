@@ -5,6 +5,8 @@ CloudFormation do
   Parameter('environmentType') { Type 'String' }
   Parameter('S3BucketSampleArn') { Type 'String' }
   Parameter('S3BucketSampleName') { Type 'String' }
+  Parameter('WAFACLArn') { Type 'String' }
+  Parameter('ACMCertificateArn') { Type 'String' }
 
   tags_common = [
     { Key: 'environmentType', Value: Ref('environmentType') }
@@ -72,28 +74,13 @@ CloudFormation do
                    }
                  }
                }
-             ])
-    # certificate and WAF reference
-    #
-    # "ViewerCertificate" => {
-    #   "AcmCertificateArn" => FnImportValue(
-    #     FnJoin("", [
-    #       Ref("environmentType"),
-    #       "-jbhifi-aws-config-region-",
-    #       1,
-    #       "-certificate-wildcard"
-    #     ])
-    #   ),
-    #   "SslSupportMethod" => "sni-only"
-    # },
-    # "WebACLId" => FnImportValue(
-    #   FnJoin("", [
-    #     Ref("environmentType"),
-    #     "-jbhifi-aws-config-region-",
-    #     Ref("environmentName"),
-    #     "-waf-webacl-web"
-    #   ])
-    # )
+             ],
+
+             'ViewerCertificate' => {
+               'AcmCertificateArn' => Ref('ACMCertificateArn'),
+               'SslSupportMethod' => 'sni-only'
+             },
+             'WebACLId' => Ref('WAFACLArn'))
 
     Property('Tags', tags_common)
   end
