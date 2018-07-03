@@ -1,0 +1,75 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lambda v1",
+  "Parameters": {
+    "environmentType": {
+      "Type": "String"
+    },
+    "s3BucketNameCodeLocation": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "LambdaPermissionlambdaFunctionSample1": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": ["lambdaFunctionSample", "Arn"]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "lambda.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "LambdaPermissionlambdaFunctionSample2": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": ["lambdaFunctionSample", "Arn"]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "logs.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "IAMRolelambdaFunctionSample": {
+      "Type": "AWS::IAM::Role"
+    },
+    "LambdaFunctionlambdaFunctionSample": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-lambdaFunctionSample"]]
+        },
+        "Handler": "lambdaFunctionSample.handler",
+        "Role": {
+          "Ref": "IAMRolelambdaFunctionSample"
+        },
+        "MemorySize": 256,
+        "TracingConfig": {
+          "Mode": "Active"
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "s3BucketNameCodeLocation"
+          },
+          "S3Key": "codeFolder/lambdaFunctionSample.zip"
+        },
+        "Runtime": "nodejs6.10",
+        "Timeout": 25,
+        "Tags": [{
+          "Key": "environmentType",
+          "Value": {
+            "Ref": "environmentType"
+          }
+        }]
+      }
+    }
+  }
+}
