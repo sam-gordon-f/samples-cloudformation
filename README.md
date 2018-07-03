@@ -12,6 +12,8 @@ AWS::CloudWatch::Dashboard [json](json/cloudWatch.json) [cfndsl](cfndsl/cloudWat
 
 AWS::ElasticSeach::Domain [json](json/elasticSearch.json) [cfndsl](cfndsl/elasticSearch.rb)
 
+AWS::GuardDuty::Detector [json](json/guardDuty.rb) [cfndsl](cfndsl/guardDuty.json)
+
 AWS::IAM::Role [json](json/lambda.json) [cfndsl](cfndsl/lambda.rb)
 
 AWS::IAM::Policy [json](json/lambda.json) [cfndsl](cfndsl/lambda.rb)
@@ -23,3 +25,13 @@ AWS::Lambda::Permission [json](json/lambda.json) [cfndsl](cfndsl/lambda.rb)
 AWS::S3::Bucket [json](json/s3.json) [cfndsl](cfndsl/s3.rb)
 
 AWS::S3::BucketPolicy [json](json/cloudFront.json) [cfndsl](cfndsl/cloudFront.rb)
+
+AWS::WAF::IPSet [json](json/waf.json) [cfndsl](cfndsl/waf.rb)
+
+AWS::WAF::SqlInjectionMatchSet [json](json/waf.json) [cfndsl](cfndsl/waf.rb)
+
+AWS::WAF::Rule [json](json/waf.json) [cfndsl](cfndsl/waf.rb)
+
+AWS::WAF::WebACL [json](json/waf.json) [cfndsl](cfndsl/waf.rb)
+
+AWS::WAF::XssMatchSet [json](json/waf.json) [cfndsl](cfndsl/waf.rb)

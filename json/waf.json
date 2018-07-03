@@ -1,0 +1,403 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "WAF v1",
+  "Parameters": {
+    "environmentType": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "WAFIPSetWhitelist": {
+      "Type": "AWS::WAF::IPSet",
+      "Properties": {
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-ip-white-list-", {
+            "Ref": "AWS::Region"
+          }]]
+        }
+      }
+    },
+    "WAFIPSetBlacklist": {
+      "Type": "AWS::WAF::IPSet",
+      "Properties": {
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-ip-black-list-", {
+            "Ref": "AWS::Region"
+          }]]
+        }
+      }
+    },
+    "WAFSqlInjectionMatchSet": {
+      "Type": "AWS::WAF::SqlInjectionMatchSet",
+      "Properties": {
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-sql-injection-match-set-", {
+            "Ref": "AWS::Region"
+          }]]
+        },
+        "SqlInjectionMatchTuples": [{
+          "FieldToMatch": {
+            "Type": "QUERY_STRING"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "QUERY_STRING"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "BODY"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "BODY"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "URI"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "URI"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "HEADER",
+            "Data": "Cookie"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "HEADER",
+            "Data": "Cookie"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "HEADER",
+            "Data": "Authorization"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "HEADER",
+            "Data": "Authorization"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }]
+      }
+    },
+    "WAFXssMatchSet": {
+      "Type": "AWS::WAF::XssMatchSet",
+      "Properties": {
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-xss-match-set-", {
+            "Ref": "AWS::Region"
+          }]]
+        },
+        "XssMatchTuples": [{
+          "FieldToMatch": {
+            "Type": "QUERY_STRING"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "QUERY_STRING"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "BODY"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "BODY"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "URI"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "URI"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "HEADER",
+            "Data": "Cookie"
+          },
+          "TextTransformation": "URL_DECODE"
+        }, {
+          "FieldToMatch": {
+            "Type": "HEADER",
+            "Data": "Cookie"
+          },
+          "TextTransformation": "HTML_ENTITY_DECODE"
+        }]
+      }
+    },
+    "WAFRuleIPWhiteList": {
+      "Type": "AWS::WAF::Rule",
+      "Properties": {
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-ip-white-list-", {
+            "Ref": "AWS::Region"
+          }]]
+        },
+        "MetricName": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "ipwhitelist", {
+            "Fn::FindInMap": ["regions", {
+              "Ref": "AWS::Region"
+            }, "metricNamesFormatted"]
+          }]]
+        },
+        "Predicates": [{
+          "DataId": {
+            "Ref": "WAFIPSetWhitelist"
+          },
+          "Negated": false,
+          "Type": "IPMatch"
+        }]
+      },
+      "DependsOn": ["WAFIPSetWhitelist"]
+    },
+    "WAFRuleIPBlackList": {
+      "Type": "AWS::WAF::Rule",
+      "Properties": {
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-ip-black-list-", {
+            "Ref": "AWS::Region"
+          }]]
+        },
+        "MetricName": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "ipblacklist", {
+            "Fn::FindInMap": ["regions", {
+              "Ref": "AWS::Region"
+            }, "metricNamesFormatted"]
+          }]]
+        },
+        "Predicates": [{
+          "DataId": {
+            "Ref": "WAFIPSetBlacklist"
+          },
+          "Negated": false,
+          "Type": "IPMatch"
+        }]
+      },
+      "DependsOn": ["WAFIPSetBlacklist"]
+    },
+    "WAFRuleSQLInjection": {
+      "Type": "AWS::WAF::Rule",
+      "Properties": {
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-sql-injection-", {
+            "Ref": "AWS::Region"
+          }]]
+        },
+        "MetricName": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "sqlinjection", {
+            "Fn::FindInMap": ["regions", {
+              "Ref": "AWS::Region"
+            }, "metricNamesFormatted"]
+          }]]
+        },
+        "Predicates": [{
+          "DataId": {
+            "Ref": "WAFSqlInjectionMatchSet"
+          },
+          "Negated": false,
+          "Type": "SqlInjectionMatch"
+        }]
+      },
+      "DependsOn": ["WAFSqlInjectionMatchSet"]
+    },
+    "WAFRuleXssDetection": {
+      "Type": "AWS::WAF::Rule",
+      "Properties": {
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-xss-detection-", {
+            "Ref": "AWS::Region"
+          }]]
+        },
+        "MetricName": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "xssdetection", {
+            "Fn::FindInMap": ["regions", {
+              "Ref": "AWS::Region"
+            }, "metricNamesFormatted"]
+          }]]
+        },
+        "Predicates": [{
+          "DataId": {
+            "Ref": "WAFXssMatchSet"
+          },
+          "Negated": false,
+          "Type": "XssMatch"
+        }]
+      },
+      "DependsOn": ["WAFXssMatchSet"]
+    },
+    "WAFWebACLApis": {
+      "Type": "AWS::WAF::WebACL",
+      "Properties": {
+        "DefaultAction": {
+          "Type": "ALLOW"
+        },
+        "MetricName": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "wafruleapi", {
+            "Fn::FindInMap": ["regions", {
+              "Ref": "AWS::Region"
+            }, "metricNamesFormatted"]
+          }]]
+        },
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-apis-", {
+            "Ref": "AWS::Region"
+          }]]
+        },
+        "Rules": [{
+          "Action": {
+            "Type": "ALLOW"
+          },
+          "Priority": 1,
+          "RuleId": {
+            "Ref": "WAFRuleIPWhiteList"
+          }
+        }, {
+          "Action": {
+            "Type": "BLOCK"
+          },
+          "Priority": 2,
+          "RuleId": {
+            "Ref": "WAFRuleIPBlackList"
+          }
+        }, {
+          "Action": {
+            "Type": "BLOCK"
+          },
+          "Priority": 3,
+          "RuleId": {
+            "Ref": "WAFRuleSQLInjection"
+          }
+        }, {
+          "Action": {
+            "Type": "BLOCK"
+          },
+          "Priority": 4,
+          "RuleId": {
+            "Ref": "WAFRuleXssDetection"
+          }
+        }]
+      },
+      "DependsOn": ["WAFRuleIPWhiteList", "WAFRuleIPBlackList", "WAFRuleSQLInjection", "WAFRuleXssDetection"]
+    },
+    "WAFWebACLWeb": {
+      "Type": "AWS::WAF::WebACL",
+      "Properties": {
+        "DefaultAction": {
+          "Type": "ALLOW"
+        },
+        "MetricName": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "wafruleweb", {
+            "Fn::FindInMap": ["regions", {
+              "Ref": "AWS::Region"
+            }, "metricNamesFormatted"]
+          }]]
+        },
+        "Name": {
+          "Fn::Join": ["", [{
+            "Ref": "environmentType"
+          }, "-web-", {
+            "Ref": "AWS::Region"
+          }]]
+        },
+        "Rules": [{
+          "Action": {
+            "Type": "ALLOW"
+          },
+          "Priority": 1,
+          "RuleId": {
+            "Ref": "WAFRuleIPWhiteList"
+          }
+        }, {
+          "Action": {
+            "Type": "BLOCK"
+          },
+          "Priority": 2,
+          "RuleId": {
+            "Ref": "WAFRuleIPBlackList"
+          }
+        }, {
+          "Action": {
+            "Type": "BLOCK"
+          },
+          "Priority": 3,
+          "RuleId": {
+            "Ref": "WAFRuleSQLInjection"
+          }
+        }]
+      },
+      "DependsOn": ["WAFRuleIPWhiteList", "WAFRuleIPBlackList", "WAFRuleSQLInjection"]
+    }
+  },
+  "Outputs": {
+    "WAFWebACLIdWeb": {
+      "Value": {
+        "Ref": "WAFWebACLWeb"
+      }
+    },
+    "WAFWebACLIdAPI": {
+      "Value": {
+        "Ref": "WAFWebACLWeb"
+      }
+    }
+  },
+  "Mappings": {
+    "regions": {
+      "us-east-1": {
+        "metricNamesFormatted": "usEast1"
+      },
+      "ap-southeast-2": {
+        "metricNamesFormatted": "apSouthEast2"
+      }
+    }
+  }
+}

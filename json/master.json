@@ -1,0 +1,46 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Master v1",
+  "Parameters": {
+    "environmentType": {
+      "Type": "String"
+    },
+    "s3BucketSourceUrl": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "cloudformationStackSample": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": {
+          "Fn::Join": ["", [{
+            "Ref": "s3BucketSourceUrl"
+          }, "fileName.json"]]
+        },
+        "TimeoutInMinutes": 5,
+        "Parameters": {
+          "environmentType": {
+            "Ref": "environmentType"
+          }
+        },
+        "Tags": [{
+          "Key": "environmentType",
+          "Value": {
+            "Ref": "environmentType"
+          }
+        }]
+      }
+    }
+  },
+  "Outputs": {
+    "CloudFormationStackDesignerUrlSample": {
+      "Description": "Designer Url for a sub-stack 'sample'",
+      "Value": {
+        "Fn::Join": ["", ["https://ap-southeast-2.console.aws.amazon.com/cloudformation/designer/home?region=ap-southeast-2&stackId=", {
+          "Ref": "cloudformationStackSample"
+        }]]
+      }
+    }
+  }
+}
