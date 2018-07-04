@@ -15,7 +15,7 @@ namespace :convert do
 
       # iterate and parse all config files
       extras = []
-      Dir['config/*.yml'].each do |extraConfigFile|
+      Dir['../cfndsl_config/*.yml'].each do |extraConfigFile|
         extras << [:yaml, extraConfigFile]
       end
 

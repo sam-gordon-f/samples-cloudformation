@@ -15,144 +15,94 @@ CloudFormation do
     Value: Ref('environmentType')
   }]
 
-  lambda_details = {
-    'Sample' => {
-      'runTime' => 'nodejs6.10',
-      'handler' => 'handler',
-      'handlerFile' => 'Sample',
-      'codeDirectory' => 'Sample',
-      'memory' => 256,
-      'envParams' => {
-        'sampleEnvParam' => 'sampleEnvValue'
-      },
-      'allowedInvokers' => [
-        'lambda.amazonaws.com',
-        'logs.amazonaws.com'
-      ]
-    }
-  }
-
-  lambda_details.each do |k, v|
-    i = 1
-    v['allowedInvokers'].each do |v2|
-      Resource("LambdaPermission#{k}#{i}") do
+  template_config['lambda'].each do |k, _v|
+    # iterate and create lambda invoke permissions for each service principal specified
+    template_config['lambda'][k]['lambda_invokers'].each do |k2, _v2|
+      Resource("LambdaPermission#{k}#{k2}") do
         Type('AWS::Lambda::Permission')
 
         Property('FunctionName', FnGetAtt("LambdaFunction#{k}", 'Arn'))
         Property('Action', 'lambda:InvokeFunction')
-        Property('Principal', v2)
+        Property('Principal', k2)
         Property('SourceAccount', Ref('AWS::AccountId'))
       end
-
-      i += 1
     end
 
+    # create a role for the function to invoke with
     Resource("IAMRole#{k}") do
       Type('AWS::IAM::Role')
     end
 
-    Resource("IAMPolicy#{k}") do
-      Type('AWS::IAM::Policy')
+    # iterate through all of the specified permissions for the role
+    template_config['lambda'][k]['lambda_permissions'].each do |k3, _v3|
+      Resource("IAMPolicy#{k3}") do
+        Type('AWS::IAM::Policy')
 
-      Property('PolicyName',
-               FnJoin('',
-                      [
-                        Ref('environmentType'),
-                        '-sample-policy'
-                      ]))
-      Property('Roles', [
-                 Ref("IAMRole#{k}")
-               ])
+        Property('PolicyName', FnJoin('', [Ref('environmentType'), "-sample-policy-#{k3}"]))
+        Property('Roles', [
+                   Ref("IAMRole#{k}")
+                 ])
+      end
     end
 
+    # define lambda function for the current iteration
     Resource("LambdaFunction#{k}") do
       Type('AWS::Lambda::Function')
 
-      Property('FunctionName',
-               FnJoin('', [
-                        Ref('environmentType'),
-                        "-#{k}"
-                      ]))
-      Property('Handler', "#{v['handlerFile']}.#{v['handler']}")
+      Property('Handler', "#{template_config['lambda'][k]['handlerFile']}.#{template_config['lambda'][k]['handler']}")
       Property('Role', Ref("IAMRole#{k}"))
-      Property('MemorySize', v['memory'])
+      Property('MemorySize', template_config['lambda'][k]['memory'])
       Property('TracingConfig',
                'Mode' => 'Active')
 
       Property('Code',
                'S3Bucket' => Ref('s3BucketNameCodeLocation'),
-               'S3Key' => "codeFolder/#{v['codeDirectory']}.zip")
+               'S3Key' => template_config['lambda'][k]['codeLocation'])
 
-      Property('Runtime', v['runTime'])
-      Property('Timeout', 25)
+      Property('Runtime', template_config['lambda'][k]['runtime'])
+      Property('Timeout', template_config['lambda'][k]['timeout'])
       Property('Tags', tags_common)
     end
-    #
-    # Resource("LogsLogGroup#{k}") do
-    #   Type('AWS::Logs::LogGroup')
-    #
-    #   Property('LogGroupName',
-    #            FnJoin('', [
-    #                     '/aws/lambda/',
-    #                     Ref("LambdaFunction#{k}")
-    #                   ]))
-    #   Property('RetentionInDays', 30)
-    # end
 
-    # Output("LambdaFunctionName#{k}") do
-    #     Description('Lambda Function Name')
-    #   Value(Ref(k))
-    # Export(FnJoin('', [Ref('environmentType'), "-#{applicationName}-", Ref('environmentName'), "-lambda-name-#{k}"]))
-    # end
-    #
-    # Output("LambdaFunctionArn#{k}") do
-    #     Description('Lambda function ARN')
-    #   Value(FnGetAtt(k, 'Arn'))
-    # Export(FnJoin('', [Ref('environmentType'), "-#{applicationName}-", Ref('environmentName'), "-lambda-arn-#{k}"]))
-    # end
-    # end
-    #
-    # Resource('SubscriptionFilterS3Export') do
-    #     Type('AWS::Logs::SubscriptionFilter')
-    #
-    #   Property('DestinationArn', FnJoin('', ['arn:aws:lambda:', Ref('AWS::Region'), ':', Ref('AWS::AccountId'), ':function:', Ref('environmentType'), '-jbhifi-logs-', Ref('environmentName'), '-logsToElasticSearch']))
-    # Property('FilterPattern', '[timestamp=*Z, request_id="*-*", application="*-*", severity<5, message]')
-    # Property('LogGroupName', FnJoin('', ['/aws/lambda/', Ref('elasticSearchIndexToS3')]))
-    #
-    # DependsOn([
-    #   'elasticSearchIndexToS3'
-    # ])
-    # end
-    #
-    # Resource('MetricFilterLogCreateSuccess') do
-    #     Type('AWS::Logs::MetricFilter')
-    #
-    #   Property('LogGroupName', FnJoin('', ['/aws/lambda/', Ref('logsToElasticSearch')]))
-    # Property('FilterPattern', FnJoin('', ['[timestamp=*Z, request_id="*-*", cwMetricCheck="CLOUDWATCH_METRIC_LOG_CREATE_SUCCESS", size="*"]']))
-    # Property('MetricTransformations', [{
-    #   'MetricValue' => '$size',
-    #   'MetricNamespace' => FnJoin('', ['CloudServices/', Ref('environmentType'), "-#{applicationName}-", Ref('environmentName')]),
-    #   'MetricName' => 'log-create-success'
-    # }])
-    #
-    # DependsOn([
-    #   'logsToElasticSearch'
-    # ])
-    # end
-    #
-    # Resource('MetricFilterLogCreateFailure') do
-    #     Type('AWS::Logs::MetricFilter')
-    #
-    #   Property('LogGroupName', FnJoin('', ['/aws/lambda/', Ref('logsToElasticSearch')]))
-    # Property('FilterPattern', FnJoin('', ['[timestamp=*Z, request_id="*-*", cwMetricCheck="CLOUDWATCH_METRIC_LOG_CREATE_FAILURE", size="*"]']))
-    # Property('MetricTransformations', [{
-    #   'MetricValue' => '$size',
-    #   'MetricNamespace' => FnJoin('', ['CloudServices/', Ref('environmentType'), "-#{applicationName}-", Ref('environmentName')]),
-    #   'MetricName' => 'log-create-failure'
-    # }])
-    #
-    # DependsOn([
-    #   'logsToElasticSearch'
-    # ])
+    Resource("LogsLogGroup#{k}") do
+      Type('AWS::Logs::LogGroup')
+
+      Property('LogGroupName',
+               FnJoin('', [
+                        '/aws/lambda/',
+                        Ref("LambdaFunction#{k}")
+                      ]))
+      Property('RetentionInDays', template_config['lambda'][k]['timeout'])
+    end
+
+    # @TODO - add index check to see if the yml specifies this
+    Resource("LogsSubscriptionFilter#{k}") do
+      Type('AWS::Logs::SubscriptionFilter')
+
+      Property('DestinationArn', template_config['lambda'][k]['subscriptions']['filters']['filter_1']['destination'])
+      Property('FilterPattern', template_config['lambda'][k]['subscriptions']['filters']['filter_1']['pattern'])
+      Property('LogGroupName', FnJoin('', ['/aws/lambda/', Ref("LambdaFunction#{k}")]))
+
+      DependsOn([
+                  "LogsLogGroup#{k}"
+                ])
+    end
+
+    # @TODO - add index check to see if the yml specifies this
+    Resource("LogsMetricFilter#{k}") do
+      Type('AWS::Logs::MetricFilter')
+
+      Property('LogGroupName', FnJoin('', ['/aws/lambda/', Ref("LambdaFunction#{k}")]))
+      Property('FilterPattern', template_config['lambda'][k]['subscriptions']['metrics']['metric_1']['pattern'])
+      Property('MetricTransformations', [{
+                 'MetricValue' => '$size',
+                 'MetricNamespace' => FnJoin('', ['customNameSpace/', "sampleMetric#{k}"]),
+                 'MetricName' => template_config['lambda'][k]['subscriptions']['metrics']['metric_1']['metricName']
+               }])
+
+      DependsOn([
+                  "LogsLogGroup#{k}"
+                ])
+    end
   end
 end

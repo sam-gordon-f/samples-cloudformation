@@ -1,0 +1,31 @@
+template_config:
+    acm:
+      certificate_domain: "*.testdomain"
+      certificate_verfication_domain: "testdomain"
+    lambda:
+      function_1:
+        runtime: nodejs6.5
+        timeout: 5
+        handler: handler
+        handlerFile: sample.js
+        codeLocation: lambdaFunction/sample.zip
+        memory: 256
+        environment_parameters:
+          test_param: test
+        lambda_invokers:
+          - 'lambda.amazonaws.com'
+          - 'logs.amazonaws.com'
+        lambda_permissions:
+          - 'a'
+          - 'b'
+        log_group_retention: 30
+        subscriptions:
+          filters:
+            filter_1:
+              destination: sample_arn
+              pattern: '[timestamp=*Z, request_id="*-*", application="*-*", severity<5, message]'
+          metrics:
+            metric_1:
+              destination: "sample_arn"
+              pattern: '[timestamp=*Z, request_id="*-*", application="*-*", severity<5, message]'
+              metricName: 'sample_metric_name'
